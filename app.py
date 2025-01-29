@@ -39,7 +39,16 @@ def load_attendance():
 
 # Save attendance data
 def save_attendance():
-    df = pd.DataFrame(dict(st.session_state.attendance))  # Ensure correct dictionary to DataFrame conversion
+    # Find the max length of any subject's attendance list
+    max_length = max(len(lst) for lst in st.session_state.attendance.values())
+
+    # Ensure all lists are the same length by padding with False
+    for subject in subjects:
+        while len(st.session_state.attendance[subject]) < max_length:
+            st.session_state.attendance[subject].append(False)
+
+    # Convert dictionary to DataFrame
+    df = pd.DataFrame.from_dict(st.session_state.attendance)
     df.to_csv(ATTENDANCE_FILE, index=False)
 
 # Load data on startup
@@ -94,10 +103,9 @@ for subject, max_classes in subjects.items():
                                 value=len(st.session_state.attendance.get(subject, [])), step=1, key=f"{subject}_conducted")
     
     # Ensure list length matches conducted classes
+    st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]  # Trim excess sessions
     while len(st.session_state.attendance[subject]) < conducted:
-        st.session_state.attendance[subject].append(False)
-    while len(st.session_state.attendance[subject]) > conducted:
-        st.session_state.attendance[subject].pop()
+        st.session_state.attendance[subject].append(False)  # Add missing sessions
     
     # Checkbox for each session
     for i in range(conducted):
