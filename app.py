@@ -61,7 +61,7 @@ for subject, max_classes in subjects.items():
 st.subheader("📌 Mark Attendance")
 for subject, max_classes in subjects.items():
     st.write(f"### {subject} (Max: {max_classes})")
-    conducted = st.number_input(f"Classes Conducted for {subject}", min_value=0, max_value=max_classes, value=len(st.session_state.attendance[subject]), step=1, key=f"{subject}_conducted")
+    conducted = st.number_input(f"Sessions Conducted for {subject}", min_value=0, max_value=max_classes, value=len(st.session_state.attendance[subject]), step=1, key=f"{subject}_conducted")
     
     while len(st.session_state.attendance[subject]) < conducted:
         st.session_state.attendance[subject].append(False)
@@ -69,10 +69,11 @@ for subject, max_classes in subjects.items():
         st.session_state.attendance[subject].pop()
     
     for i in range(conducted):
-        st.session_state.attendance[subject][i] = st.checkbox(f"Class {i+1}", value=st.session_state.attendance[subject][i], key=f"{subject}_class_{i+1}")
+        st.session_state.attendance[subject][i] = st.checkbox(f"Session {i+1}", value=st.session_state.attendance[subject][i], key=f"{subject}_session_{i+1}")
 
 # Display summary table
 summary_df = pd.DataFrame(summary)
 st.subheader("📄 Attendance Summary")
 st.dataframe(summary_df)
+
 
