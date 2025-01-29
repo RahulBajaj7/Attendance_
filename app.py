@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import requests
-from io import StringIO
+import os
 
 # Set page config
 st.set_page_config(layout="wide")
@@ -17,27 +16,22 @@ subjects = {
     "C&S": 20,
 }
 
-# GitHub raw URL for the CSV file
-GITHUB_RAW_URL = "https://raw.githubusercontent.com/RahulBajaj7/Attendance_/main/Data.csv"
+# File path for saving attendance data
+ATTENDANCE_FILE = "attendance_data.csv"
 
-# Load attendance data from GitHub
+# Load attendance data
 def load_attendance():
     if "attendance" not in st.session_state:
-        try:
-            # Fetch the raw CSV data from GitHub
-            response = requests.get(GITHUB_RAW_URL)
-            response.raise_for_status()  # Check if request was successful
-            csv_data = response.text
-            df = pd.read_csv(StringIO(csv_data))
-            st.session_state.attendance = df.set_index('Subject').T.to_dict(orient="list")
-        except Exception as e:
+        if os.path.exists(ATTENDANCE_FILE):
+            df = pd.read_csv(ATTENDANCE_FILE)
+            st.session_state.attendance = df.to_dict(orient="list")
+        else:
             st.session_state.attendance = {subject: [] for subject in subjects}
-            st.error(f"Error loading data from GitHub: {e}")
 
-# Save attendance data (locally for this session)
+# Save attendance data
 def save_attendance():
     df = pd.DataFrame.from_dict(st.session_state.attendance, orient="index").transpose()
-    df.to_csv("attendance_data.csv", index=False)
+    df.to_csv(ATTENDANCE_FILE, index=False)
 
 # Load data on startup
 load_attendance()
