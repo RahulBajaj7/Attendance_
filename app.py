@@ -24,13 +24,22 @@ def load_attendance():
     if "attendance" not in st.session_state:
         if os.path.exists(ATTENDANCE_FILE):
             df = pd.read_csv(ATTENDANCE_FILE)
-            st.session_state.attendance = df.to_dict(orient="list")
+            # Convert dataframe to dictionary
+            attendance_dict = df.to_dict(orient="list")
+            
+            # Ensure all subjects exist in attendance state
+            for subject in subjects:
+                if subject not in attendance_dict:
+                    attendance_dict[subject] = []
+            
+            st.session_state.attendance = attendance_dict
         else:
+            # Initialize empty attendance data for all subjects
             st.session_state.attendance = {subject: [] for subject in subjects}
 
 # Save attendance data
 def save_attendance():
-    df = pd.DataFrame.from_dict(st.session_state.attendance, orient="index").transpose()
+    df = pd.DataFrame(dict(st.session_state.attendance))  # Ensure correct dictionary to DataFrame conversion
     df.to_csv(ATTENDANCE_FILE, index=False)
 
 # Load data on startup
@@ -43,8 +52,9 @@ st.title("📊 Attendance Dashboard")
 st.subheader("📊 Attendance Visualization")
 cols = st.columns(3)
 for idx, (subject, max_classes) in enumerate(subjects.items()):
-    conducted = len(st.session_state.attendance.get(subject, []))
-    attended = sum(st.session_state.attendance.get(subject, []))
+    attended_list = st.session_state.attendance.get(subject, [])
+    conducted = len(attended_list)
+    attended = sum(attended_list)
     missed = conducted - attended
     percentage = (attended / conducted * 100) if conducted > 0 else 0
 
@@ -65,8 +75,9 @@ for idx, (subject, max_classes) in enumerate(subjects.items()):
 st.sidebar.header("🎯 Goal Tracking (80% Target)")
 summary = []
 for subject, max_classes in subjects.items():
-    conducted = len(st.session_state.attendance.get(subject, []))
-    attended = sum(st.session_state.attendance.get(subject, []))
+    attended_list = st.session_state.attendance.get(subject, [])
+    conducted = len(attended_list)
+    attended = sum(attended_list)
     percentage = (attended / conducted * 100) if conducted > 0 else 0
     summary.append({"Subject": subject, "Conducted": conducted, "Attended": attended, "Percentage": percentage})
     
@@ -92,7 +103,7 @@ for subject, max_classes in subjects.items():
     for i in range(conducted):
         st.session_state.attendance[subject][i] = st.checkbox(f"Session {i+1}", 
                                                               value=st.session_state.attendance[subject][i], 
-                                                              key=f"{subject}_session_{i+1}")
+                                                              key=f"{subject}session{i+1}")
 
 # Display summary table
 summary_df = pd.DataFrame(summary)
@@ -103,5 +114,3 @@ st.dataframe(summary_df)
 if st.button("💾 Save Attendance"):
     save_attendance()
     st.success("Attendance data saved successfully!")
-
-
