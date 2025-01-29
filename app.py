@@ -37,6 +37,10 @@ def load_attendance():
             # Initialize empty attendance data for all subjects
             st.session_state.attendance = {subject: [] for subject in subjects}
 
+        # Initialize conducted classes count in session state if not already
+        if "conducted_classes" not in st.session_state:
+            st.session_state.conducted_classes = {subject: 0 for subject in subjects}
+
 # Save attendance data
 def save_attendance():
     # Find the max length of any subject's attendance list
@@ -99,16 +103,24 @@ for subject, max_classes in subjects.items():
 st.subheader("📌 Mark Attendance")
 for subject, max_classes in subjects.items():
     st.write(f"### {subject} (Max: {max_classes})")
-    conducted = st.number_input(f"Sessions Conducted for {subject}", min_value=0, max_value=max_classes, 
-                                value=len(st.session_state.attendance.get(subject, [])), step=1, key=f"{subject}_conducted")
+    
+    # Get the current number of conducted sessions from session state
+    conducted = st.session_state.conducted_classes.get(subject, 0)
+    
+    # Allow the user to update the conducted classes
+    new_conducted = st.number_input(f"Sessions Conducted for {subject}", min_value=0, max_value=max_classes, 
+                                    value=conducted, step=1, key=f"{subject}_conducted")
+    
+    # Update the conducted classes count in session state
+    st.session_state.conducted_classes[subject] = new_conducted
     
     # Ensure list length matches conducted classes
-    st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]  # Trim excess sessions
-    while len(st.session_state.attendance[subject]) < conducted:
+    st.session_state.attendance[subject] = st.session_state.attendance[subject][:new_conducted]  # Trim excess sessions
+    while len(st.session_state.attendance[subject]) < new_conducted:
         st.session_state.attendance[subject].append(False)  # Add missing sessions
     
     # Checkbox for each session
-    for i in range(conducted):
+    for i in range(new_conducted):
         st.session_state.attendance[subject][i] = st.checkbox(f"Session {i+1}", 
                                                               value=st.session_state.attendance[subject][i], 
                                                               key=f"{subject}session{i+1}")
