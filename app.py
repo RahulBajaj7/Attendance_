@@ -15,10 +15,20 @@ subjects = {
     "C&S": 20,
 }
 
-# Initialize attendance data
+# Load attendance data if it exists
 if "attendance" not in st.session_state:
-    st.session_state.attendance = {subject: [] for subject in subjects}
+    try:
+        df = pd.read_csv("attendance_data.csv")
+        st.session_state.attendance = df.to_dict(orient="list")
+    except FileNotFoundError:
+        st.session_state.attendance = {subject: [] for subject in subjects}
 
+# Function to save attendance data
+def save_attendance():
+    df = pd.DataFrame.from_dict(st.session_state.attendance, orient="index").transpose()
+    df.to_csv("attendance_data.csv", index=False)
+
+# Title and Visualization
 st.title("📊 Attendance Dashboard")
 
 # Donut Chart Visualization (3 in a row)
@@ -75,5 +85,9 @@ for subject, max_classes in subjects.items():
 summary_df = pd.DataFrame(summary)
 st.subheader("📄 Attendance Summary")
 st.dataframe(summary_df)
+
+# Save attendance data
+save_attendance()
+
 
 
