@@ -21,39 +21,36 @@ ATTENDANCE_FILE = "attendance_data.csv"
 
 # Load attendance data
 def load_attendance():
-    if "attendance" not in st.session_state or "conducted_sessions" not in st.session_state:
+    if "attendance" not in st.session_state:
         if os.path.exists(ATTENDANCE_FILE):
             df = pd.read_csv(ATTENDANCE_FILE)
 
-            # Ensure all subjects exist in the data
-            for subject in subjects:
-                if subject not in df.columns:
-                    df[subject] = []
-
-            # Convert dataframe to dictionary
+            # Convert DataFrame to dictionary
             attendance_dict = df.to_dict(orient="list")
 
-            # Extract conducted sessions from attendance length
-            conducted_sessions = {subject: len(attendance_dict.get(subject, [])) for subject in subjects}
+            # Ensure all subjects exist in attendance state
+            max_length = df.shape[0]  # Max number of sessions recorded
+            for subject in subjects:
+                if subject not in attendance_dict:
+                    attendance_dict[subject] = [False] * max_length  # Match length with existing data
 
-            # Store in session state
             st.session_state.attendance = attendance_dict
-            st.session_state.conducted_sessions = conducted_sessions
         else:
-            # Initialize empty attendance data
+            # Initialize empty attendance data for all subjects
             st.session_state.attendance = {subject: [] for subject in subjects}
-            st.session_state.conducted_sessions = {subject: 0 for subject in subjects}
 
 # Save attendance data
 def save_attendance():
+    # Find the max length of any subject's attendance list
+    max_length = max(len(lst) for lst in st.session_state.attendance.values())
+
+    # Ensure all lists are the same length by padding with False
+    for subject in subjects:
+        while len(st.session_state.attendance[subject]) < max_length:
+            st.session_state.attendance[subject].append(False)
+
     # Convert dictionary to DataFrame
-    df = pd.DataFrame.from_dict(st.session_state.attendance, orient="index").transpose()
-
-    # Save conducted sessions count as the first row
-    df.loc[-1] = [st.session_state.conducted_sessions[subject] for subject in subjects]
-    df.index = df.index + 1  # Shift index to keep conducted sessions at the top
-    df.sort_index(inplace=True)
-
+    df = pd.DataFrame.from_dict(st.session_state.attendance)
     df.to_csv(ATTENDANCE_FILE, index=False)
 
 # Load data on startup
@@ -67,7 +64,7 @@ st.subheader("📊 Attendance Visualization")
 cols = st.columns(3)
 for idx, (subject, max_classes) in enumerate(subjects.items()):
     attended_list = st.session_state.attendance.get(subject, [])
-    conducted = st.session_state.conducted_sessions.get(subject, 0)
+    conducted = len(attended_list)
     attended = sum(attended_list)
     missed = conducted - attended
     percentage = (attended / conducted * 100) if conducted > 0 else 0
@@ -90,7 +87,7 @@ st.sidebar.header("🎯 Goal Tracking (80% Target)")
 summary = []
 for subject, max_classes in subjects.items():
     attended_list = st.session_state.attendance.get(subject, [])
-    conducted = st.session_state.conducted_sessions.get(subject, 0)
+    conducted = len(attended_list)
     attended = sum(attended_list)
     percentage = (attended / conducted * 100) if conducted > 0 else 0
     summary.append({"Subject": subject, "Conducted": conducted, "Attended": attended, "Percentage": percentage})
@@ -105,32 +102,23 @@ st.subheader("📌 Mark Attendance")
 for subject, max_classes in subjects.items():
     st.write(f"### {subject} (Max: {max_classes})")
 
-    # Number input for conducted sessions
-    conducted = st.number_input(
-        f"Sessions Conducted for {subject}",
-        min_value=0,
-        max_value=max_classes,
-        value=st.session_state.conducted_sessions[subject],  # Persisted value
-        step=1,
-        key=f"{subject}_conducted_input"
-    )
+    # Preserve previous session count
+    conducted = st.session_state.get(f"{subject}_conducted", len(st.session_state.attendance.get(subject, [])))
 
-    # Update session state if user changes conducted sessions
-    if conducted != st.session_state.conducted_sessions[subject]:
-        st.session_state.conducted_sessions[subject] = conducted
-
+    conducted = st.number_input(f"Sessions Conducted for {subject}", 
+                                min_value=0, max_value=max_classes, 
+                                value=conducted, step=1, key=f"{subject}_conducted")
+    
     # Ensure list length matches conducted classes
     st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]  # Trim excess sessions
     while len(st.session_state.attendance[subject]) < conducted:
         st.session_state.attendance[subject].append(False)  # Add missing sessions
-
+    
     # Checkbox for each session
     for i in range(conducted):
-        st.session_state.attendance[subject][i] = st.checkbox(
-            f"Session {i+1}",
-            value=st.session_state.attendance[subject][i],
-            key=f"{subject}_session_{i+1}"
-        )
+        st.session_state.attendance[subject][i] = st.checkbox(f"Session {i+1}", 
+                                                              value=st.session_state.attendance[subject][i], 
+                                                              key=f"{subject}_session_{i+1}")
 
 # Display summary table
 summary_df = pd.DataFrame(summary)
