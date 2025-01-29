@@ -16,17 +16,21 @@ subjects = {
 }
 
 # Load attendance data if it exists
-if "attendance" not in st.session_state:
-    try:
-        df = pd.read_csv("attendance_data.csv")
-        st.session_state.attendance = df.to_dict(orient="list")
-    except FileNotFoundError:
-        st.session_state.attendance = {subject: [] for subject in subjects}
+def load_attendance():
+    if "attendance" not in st.session_state:
+        try:
+            df = pd.read_csv("attendance_data.csv")
+            st.session_state.attendance = df.to_dict(orient="list")
+        except FileNotFoundError:
+            st.session_state.attendance = {subject: [] for subject in subjects}
 
 # Function to save attendance data
 def save_attendance():
     df = pd.DataFrame.from_dict(st.session_state.attendance, orient="index").transpose()
     df.to_csv("attendance_data.csv", index=False)
+
+# Load attendance data when the page is loaded
+load_attendance()
 
 # Title and Visualization
 st.title("📊 Attendance Dashboard")
@@ -88,6 +92,5 @@ st.dataframe(summary_df)
 
 # Save attendance data
 save_attendance()
-
 
 
