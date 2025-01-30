@@ -28,7 +28,7 @@ fig = px.pie(
     names=["Earned Points", "Remaining Points"],
     values=[total_points, remaining_points],
     hole=0.5,
-    color_discrete_sequence=["#E74C3C", "#3498DB]  # Updated colors (blue & red)
+    color_discrete_sequence=["#E74C3C", "#3498DB"]  # Updated colors (blue & red)
 )
 fig.update_layout(title_text="Seminar Points Progress", title_x=0.5)
 
