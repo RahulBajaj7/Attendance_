@@ -15,12 +15,12 @@ data = [
     {"Date": "29th November, 2024", "Topic": "FIMC", "Points": 2},
     {"Date": "30th November, 2024", "Topic": "FIMC", "Points": 2},
     {"Date": "16th December, 2024", "Topic": "CSD", "Points": 2},
-    {"Date": "16th January, 2025", "Topic": "Technovate: Design Thinking", "Points": 2},
-    {"Date": "21st January, 2025", "Topic": "Technovate: Flutter Workshop", "Points": 2},
+    {"Date": "16th January, 2025", "Topic": "Technovate: Design Thinking)", "Points": 2},
+    {"Date": "21st January, 2025", "Topic": "Technovate:Flutter Workshop", "Points": 2},
     {"Date": "30th January, 2025", "Topic": "Think Tank: Consulting", "Points": 2},
     {"Date": "31st January, 2025", "Topic": "Oraculum 2025: Panel Discussion, Envison 1.0", "Points": 3},
     {"Date": "31st January, 2025", "Topic": "Oraculum 2025: Real Talk Trailblazers, Envison 1.0", "Points": 3},
-    {"Date": "01st February, 2025", "Topic": "Oraculum 2025: Mastering Management 6", "Points": 2},
+    {"Date": "01st February, 2025", "Topic": "Mastering Management 6", "Points": 2},
 ]
 
 df = pd.DataFrame(data)
@@ -46,40 +46,60 @@ st.markdown(
         .main {
             background-color: #F7F9F9;
         }
-        .big-font {
-            font-size:22px !important;
-            font-weight: bold;
-            color: #2C3E50;
+        .summary-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
         }
         .summary-box {
+            border: 2px solid #1E8449;
             background-color: #D5F5E3;
-            padding: 15px;
+            padding: 20px;
             border-radius: 10px;
             text-align: center;
             font-size: 18px;
             color: #1E8449;
             font-weight: bold;
+            width: 45%;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .title {
+            font-size: 26px;
+            font-weight: bold;
+            color: #2C3E50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section-header {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2C3E50;
+            margin-top: 30px;
         }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-st.title("📌 Seminar Attendance Tracker")
+# Title
+st.markdown('<div class="title">📌 Seminar Attendance Tracker</div>', unsafe_allow_html=True)
 
 # Summary Section
-st.subheader("🌟 Progress Summary")
-col1, col2 = st.columns(2)
-with col1:
-    st.markdown(f'<div class="summary-box">📈 Total Points Earned: {total_points}</div>', unsafe_allow_html=True)
-with col2:
-    st.markdown(f'<div class="summary-box">🎯 Points Needed to Reach Goal: {remaining_points}</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-header">🌟 Progress Summary</div>', unsafe_allow_html=True)
+st.markdown(
+    f"""
+    <div class="summary-container">
+        <div class="summary-box">📈 Total Points Earned: {total_points}</div>
+        <div class="summary-box">🎯 Points Needed to Reach Goal: {remaining_points}</div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # Display Donut Chart
-st.subheader("📊 Progress Toward 40 Points Goal")
+st.markdown('<div class="section-header">📊 Progress Toward 40 Points Goal</div>', unsafe_allow_html=True)
 st.plotly_chart(fig, use_container_width=True)
 
 # Display Seminar Data
-st.subheader("📅 Seminars Attended")
+st.markdown('<div class="section-header">📅 Seminars Attended</div>', unsafe_allow_html=True)
 st.dataframe(df, hide_index=True)
-
