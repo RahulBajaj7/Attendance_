@@ -12,7 +12,9 @@ data = [
     {"Date": "29th November, 2024", "Topic": "FIMC", "Points": 2},
     {"Date": "30th November, 2024", "Topic": "FIMC", "Points": 2},
     {"Date": "16th December, 2024", "Topic": "CSD", "Points": 2},
-    {"Date": "30th January, 2025", "Topic": "Think Tank (Consulting)", "Points": 2},
+    {"Date": "16th January, 2025", "Topic": "Technovate: Design Thinking)", "Points": 2},
+    {"Date": "21st January, 2025", "Topic": "Technovate:Flutter Workshop", "Points": 2},
+    {"Date": "30th January, 2025", "Topic": "Think Tank: Consulting", "Points": 2},
 ]
 
 df = pd.DataFrame(data)
@@ -26,7 +28,7 @@ fig = px.pie(
     names=["Earned Points", "Remaining Points"],
     values=[total_points, remaining_points],
     hole=0.5,
-    color_discrete_sequence=["#3498DB", "#E74C3C"]  # Updated colors (blue & red)
+    color_discrete_sequence=["#E74C3C", "#3498DB]  # Updated colors (blue & red)
 )
 fig.update_layout(title_text="Seminar Points Progress", title_x=0.5)
 
