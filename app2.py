@@ -131,13 +131,20 @@ st.markdown(
 st.markdown('<div class="section-header">📊 Progress Toward 40 Points Goal</div>', unsafe_allow_html=True)
 st.plotly_chart(fig, use_container_width=True)
 
-# Display Seminar Data
+# Modify DataFrame to include Serial Number starting from 1
+df.index = range(1, len(df) + 1)  # Start index from 1
+df.index.name = "S.No"
+
+# Display Seminar Data (Centered & Styled)
 st.markdown('<div class="section-header">📅 Seminars Attended</div>', unsafe_allow_html=True)
-st.markdown('<div class="dataframe-container">', unsafe_allow_html=True)
+st.markdown('<div style="display: flex; justify-content: center;">', unsafe_allow_html=True)
 st.write(df.style.set_properties(**{
     'background-color': '#2C3E50',
     'color': 'white',
     'border-color': 'white',
     'text-align': 'center'
-}))
+}).set_table_styles([
+    {'selector': 'th', 'props': [('background-color', '#2C3E50'), ('color', 'white'), ('text-align', 'center')]},
+    {'selector': 'td', 'props': [('text-align', 'center')]}
+]))
 st.markdown('</div>', unsafe_allow_html=True)
