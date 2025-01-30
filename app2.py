@@ -15,12 +15,12 @@ data = [
     {"Date": "29th November, 2024", "Topic": "FIMC", "Points": 2},
     {"Date": "30th November, 2024", "Topic": "FIMC", "Points": 2},
     {"Date": "16th December, 2024", "Topic": "CSD", "Points": 2},
-    {"Date": "16th January, 2025", "Topic": "Technovate: Design Thinking)", "Points": 2},
-    {"Date": "21st January, 2025", "Topic": "Technovate:Flutter Workshop", "Points": 2},
+    {"Date": "16th January, 2025", "Topic": "Technovate: Design Thinking", "Points": 2},
+    {"Date": "21st January, 2025", "Topic": "Technovate: Flutter Workshop", "Points": 2},
     {"Date": "30th January, 2025", "Topic": "Think Tank: Consulting", "Points": 2},
     {"Date": "31st January, 2025", "Topic": "Oraculum 2025: Panel Discussion, Envison 1.0", "Points": 3},
     {"Date": "31st January, 2025", "Topic": "Oraculum 2025: Real Talk Trailblazers, Envison 1.0", "Points": 3},
-    {"Date": "01st February, 2025", "Topic": "Oraculum 2025:Mastering Management 6", "Points": 2},
+    {"Date": "01st February, 2025", "Topic": "Oraculum 2025: Mastering Management 6", "Points": 2},
 ]
 
 df = pd.DataFrame(data)
