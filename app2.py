@@ -54,7 +54,7 @@ fig.update_layout(
 )
 
 # Set Page Title
-st.title("📊 Rahul & Tanu's Seminar Points")
+st.title("📊 Rahul & Tanu's Seminar Points 🎓👩‍❤️‍💋‍👨")s")
 
 # Display Summary at Top
 st.markdown(
