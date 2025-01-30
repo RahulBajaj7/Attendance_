@@ -42,7 +42,7 @@ fig = px.pie(
 fig.update_layout(
     title_text="Seminar Points Progress",
     title_x=0.5,
-    margin=dict(l=20, r=20, t=40, b=10),  # Reduced margins to prevent scrolling
+    margin=dict((l=20, r=20, t=40, b=10)  # Reduced margins to prevent scrolling
     legend=dict(
         orientation="h",  # Horizontal legend
         yanchor="bottom",
