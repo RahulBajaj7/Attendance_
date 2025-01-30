@@ -49,7 +49,8 @@ fig.update_layout(
         y=-0.2,  # Moves legend up
         xanchor="center",
         x=0.5
-    )
+    ),
+    height=350  # Reduced the height of the donut chart
 )
 
 # Set Page Title
@@ -71,7 +72,7 @@ st.markdown(
 )
 
 # Create Two Columns (Chart on Left, Table on Right)
-col1, col2 = st.columns([1.8, 1])  # Adjusted widths for chart and table
+col1, col2 = st.columns([1.5, 2])  # Adjusted widths for chart and table
 
 # Left Column → Donut Chart
 with col1:
