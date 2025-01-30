@@ -55,19 +55,41 @@ fig.update_layout(
 # Set Page Title
 st.title("📊 Rahul & Tanu's Seminar Points")
 
+# Display Summary at Top
+st.markdown(
+    f"""
+    <div style="display: flex; justify-content: space-around; padding: 10px;">
+        <div style="border: 2px solid white; padding: 15px; border-radius: 10px; background-color: #2C3E50; color: white; font-size: 18px;">
+            ✅ <b>Total Points Earned:</b> <span style='color: #2ECC71; font-size: 22px;'><b>{total_points}</b></span>
+        </div>
+        <div style="border: 2px solid white; padding: 15px; border-radius: 10px; background-color: #2C3E50; color: white; font-size: 18px;">
+            ❗ <b>Points Needed to Reach Goal:</b> <span style='color: #E74C3C; font-size: 22px;'><b>{remaining_points}</b></span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 # Create Two Columns (Chart on Left, Table on Right)
-col1, col2 = st.columns([1.2, 1.8])  # Left = Chart, Right = Table
+col1, col2 = st.columns([1.2, 0.05, 1.8])  # Added middle column for spacing (partition)
 
 # Left Column → Donut Chart
 with col1:
     st.markdown("### 📈 Progress Toward 40 Points Goal")
     st.plotly_chart(fig, use_container_width=True)
-    st.markdown(f"**✅ Total Points Earned:** <span style='color: #2ECC71; font-size: 20px;'><b>{total_points}</b></span>", unsafe_allow_html=True)
-    st.markdown(f"**❗ Points Needed to Reach Goal:** <span style='color: #E74C3C; font-size: 20px;'><b>{remaining_points}</b></span>", unsafe_allow_html=True)
+
+# Middle Column → Partition Line
+with col2:
+    st.markdown(
+        """
+        <div style="border-left: 2px solid white; height: 100%;"></div>
+        """,
+        unsafe_allow_html=True
+    )
 
 # Right Column → Seminar Table
 with col2:
-    st.markdown('<div class="section-header">📅 Seminars Attended</div>', unsafe_allow_html=True)
+    st.markdown("### 📅 Seminars Attended")
     st.markdown('<div style="display: flex; justify-content: center;">', unsafe_allow_html=True)
     st.write(df.style.set_properties(**{
         'background-color': '#2C3E50',
@@ -79,3 +101,4 @@ with col2:
         {'selector': 'td', 'props': [('text-align', 'center')]}
     ]))
     st.markdown('</div>', unsafe_allow_html=True)
+
