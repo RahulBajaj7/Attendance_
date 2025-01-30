@@ -1,9 +1,10 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
 # Customizing Streamlit page
-st.set_page_config(page_title="Seminar Attendance Tracker", layout="wide")
+st.set_page_config(page_title="Rahul & Tanu's Seminar Points", layout="wide")
 
 # Updated seminar data
 data = [
@@ -30,12 +31,12 @@ total_points = df["Points"].sum()
 goal = 40
 remaining_points = max(goal - total_points, 0)
 
-# Donut Chart with Soothing Colors
+# Donut Chart with Soft Colors
 fig = px.pie(
     names=["Earned Points", "Remaining Points"],
     values=[total_points, remaining_points],
     hole=0.5,
-    color_discrete_sequence=["#5DADE2", "#F1948A"]  # Soft Blue & Light Coral Red
+    color_discrete_sequence=["#3498DB", "#E74C3C"]  # Blue & Red
 )
 fig.update_layout(title_text="📊 Seminar Points Progress", title_x=0.5)
 
@@ -44,37 +45,39 @@ st.markdown(
     """
     <style>
         .main {
-            background-color: #F7F9F9;
+            background-color: #F9F9F9;
         }
         .summary-container {
             display: flex;
             justify-content: center;
-            gap: 20px;
+            gap: 50px;
+            margin-top: 20px;
         }
         .summary-box {
-            border: 2px solid #1E8449;
-            background-color: #D5F5E3;
+            border: 2px solid #2980B9;
+            background-color: #EBF5FB;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 12px;
             text-align: center;
             font-size: 18px;
-            color: #1E8449;
+            color: #154360;
             font-weight: bold;
-            width: 45%;
+            width: 40%;
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
         }
         .title {
-            font-size: 26px;
+            font-size: 30px;
             font-weight: bold;
             color: #2C3E50;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .section-header {
             font-size: 22px;
             font-weight: bold;
             color: #2C3E50;
-            margin-top: 30px;
+            margin-top: 40px;
+            text-align: center;
         }
     </style>
     """,
@@ -82,7 +85,7 @@ st.markdown(
 )
 
 # Title
-st.markdown('<div class="title">📌 Seminar Attendance Tracker</div>', unsafe_allow_html=True)
+st.markdown('<div class="title">Rahul & Tanu\'s Seminar Points 🎓📊</div>', unsafe_allow_html=True)
 
 # Summary Section
 st.markdown('<div class="section-header">🌟 Progress Summary</div>', unsafe_allow_html=True)
