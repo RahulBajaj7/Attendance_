@@ -71,21 +71,12 @@ st.markdown(
 )
 
 # Create Two Columns (Chart on Left, Table on Right)
-col1, col2 = st.columns([1.2, 0.05, 1.8])  # Added middle column for spacing (partition)
+col1, col2 = st.columns([1.8, 1])  # Adjusted widths for chart and table
 
 # Left Column → Donut Chart
 with col1:
     st.markdown("### 📈 Progress Toward 40 Points Goal")
     st.plotly_chart(fig, use_container_width=True)
-
-# Middle Column → Partition Line
-with col2:
-    st.markdown(
-        """
-        <div style="border-left: 2px solid white; height: 100%;"></div>
-        """,
-        unsafe_allow_html=True
-    )
 
 # Right Column → Seminar Table
 with col2:
@@ -101,4 +92,3 @@ with col2:
         {'selector': 'td', 'props': [('text-align', 'center')]}
     ]))
     st.markdown('</div>', unsafe_allow_html=True)
-
