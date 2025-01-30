@@ -4,9 +4,10 @@ import plotly.express as px
 
 # Updated seminar data
 data = [
-    {"Date": "12th August, 2024", "Topic": "CMIE Prowess IQ and Eikon - Refinitiv Database", "Points": 3},
-    {"Date": "5th August, 2024", "Topic": "EBSCO Business Source Elite and ABI/INFORM Complete Database", "Points": 2},
     {"Date": "30th July, 2024", "Topic": "Invite for MOU Signing Ceremony with ClarityX, Mumbai", "Points": 2},
+    {"Date": "2nd August, 2024", "Topic": "CID", "Points": 2},
+    {"Date": "5th August, 2024", "Topic": "EBSCO Business Source Elite and ABI/INFORM Complete Database", "Points": 2},
+    {"Date": "12th August, 2024", "Topic": "CMIE Prowess IQ and Eikon - Refinitiv Database", "Points": 3},
     {"Date": "11th September, 2024", "Topic": "Understanding Financial Behaviour & Financial Goal Setting", "Points": 2},
     {"Date": "29th November, 2024", "Topic": "FIMC", "Points": 2},
     {"Date": "30th November, 2024", "Topic": "FIMC", "Points": 2},
@@ -25,7 +26,7 @@ fig = px.pie(
     names=["Earned Points", "Remaining Points"],
     values=[total_points, remaining_points],
     hole=0.5,
-    color_discrete_sequence=["#4CAF50", "#D3D3D3"]
+    color_discrete_sequence=["#3498DB", "#E74C3C"]  # Updated colors (blue & red)
 )
 fig.update_layout(title_text="Seminar Points Progress", title_x=0.5)
 
