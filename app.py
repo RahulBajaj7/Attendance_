@@ -41,16 +41,21 @@ def load_attendance():
 
 # Save attendance data
 def save_attendance():
-    # Find the max length of any subject's attendance list
-    max_length = max(len(lst) for lst in st.session_state.attendance.values())
+    # Find the max number of sessions conducted across all subjects
+    max_length = max(len(st.session_state.attendance[subject]) for subject in subjects)
 
-    # Ensure all lists are the same length by padding with False
+    # Ensure all subjects have the same length by padding with False (not attended)
     for subject in subjects:
         while len(st.session_state.attendance[subject]) < max_length:
-            st.session_state.attendance[subject].append(False)
+            st.session_state.attendance[subject].append(False)  # Add missing sessions
+        
+        # Trim if necessary (to avoid extra unwanted entries)
+        st.session_state.attendance[subject] = st.session_state.attendance[subject][:max_length]
 
     # Convert dictionary to DataFrame
     df = pd.DataFrame.from_dict(st.session_state.attendance)
+
+    # Save DataFrame to CSV
     df.to_csv(ATTENDANCE_FILE, index=False)
 
 # Load data on startup
@@ -103,17 +108,18 @@ for subject, max_classes in subjects.items():
     st.write(f"### {subject} (Max: {max_classes})")
 
     # Preserve previous session count
-    conducted = st.session_state.get(f"{subject}_conducted", len(st.session_state.attendance.get(subject, [])))
+    conducted = len(st.session_state.attendance.get(subject, []))
 
     conducted = st.number_input(f"Sessions Conducted for {subject}", 
                                 min_value=0, max_value=max_classes, 
                                 value=conducted, step=1, key=f"{subject}_conducted")
     
     # Ensure list length matches conducted classes
-    st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]  # Trim excess sessions
-    while len(st.session_state.attendance[subject]) < conducted:
-        st.session_state.attendance[subject].append(False)  # Add missing sessions
-    
+    if conducted > len(st.session_state.attendance[subject]):
+        st.session_state.attendance[subject].extend([False] * (conducted - len(st.session_state.attendance[subject])))
+    elif conducted < len(st.session_state.attendance[subject]):
+        st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]
+
     # Checkbox for each session
     for i in range(conducted):
         st.session_state.attendance[subject][i] = st.checkbox(f"Session {i+1}", 
