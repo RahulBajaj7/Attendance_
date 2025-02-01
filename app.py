@@ -6,7 +6,7 @@ import os
 # Set page config
 st.set_page_config(layout="wide")
 
-# Subject details
+# Subject details with dynamic tracking (20-session subjects are flexible)
 subjects = {
     "LAB": 10,
     "RL": 10,
@@ -14,6 +14,7 @@ subjects = {
     "DLM": 20,
     "OSCM": 20,
     "C&S": 20,
+    "BIPBI": 20
 }
 
 # File path for saving attendance data
@@ -28,17 +29,10 @@ def load_attendance():
             # Convert DataFrame to dictionary
             attendance_dict = df.to_dict(orient="list")
 
-            # Ensure all subjects exist in attendance state with equal length
-            max_length = df.shape[0] if not df.empty else 0
+            # Ensure all subjects exist in attendance state
             for subject in subjects:
                 if subject not in attendance_dict:
-                    attendance_dict[subject] = [False] * max_length  # Match length with existing data
-
-            # Ensure all lists have the same length
-            for subject in subjects:
-                while len(attendance_dict[subject]) < max_length:
-                    attendance_dict[subject].append(False)  # Pad with 'False' (not attended)
-
+                    attendance_dict[subject] = []  # Start fresh if missing
             st.session_state.attendance = attendance_dict
         else:
             # Initialize empty attendance data for all subjects
@@ -50,22 +44,12 @@ def save_attendance():
         st.warning("No attendance data to save.")
         return
 
-    # Find max list length
-    max_length = max((len(v) for v in st.session_state.attendance.values()), default=0)
-
-    # Ensure all subjects have the same length
-    for subject in st.session_state.attendance:
-        while len(st.session_state.attendance[subject]) < max_length:
-            st.session_state.attendance[subject].append(False)  # Pad missing sessions with False
-
-        st.session_state.attendance[subject] = st.session_state.attendance[subject][:max_length]  # Trim if needed
-
     # Convert to DataFrame
-    df = pd.DataFrame.from_dict(st.session_state.attendance)
+    df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in st.session_state.attendance.items()]))
 
     # Save to CSV
     df.to_csv(ATTENDANCE_FILE, index=False)
-    st.success("✅ Attendance saved successfully!")
+    st.success("Attendance saved successfully!")
 
 # Load data on startup
 load_attendance()
@@ -116,28 +100,24 @@ st.subheader("📌 Mark Attendance")
 for subject, max_classes in subjects.items():
     st.write(f"### {subject} (Max: {max_classes})")
 
-    # Preserve previous session count
-    conducted = st.session_state.get(f"{subject}_conducted", len(st.session_state.attendance.get(subject, [])))
+    # Sessions conducted dynamically tracked
+    conducted = len(st.session_state.attendance[subject])
 
+    # Ensure conducted is within allowed max
     conducted = st.number_input(f"Sessions Conducted for {subject}", 
                                 min_value=0, max_value=max_classes, 
                                 value=conducted, step=1, key=f"{subject}_conducted")
-    
-    # Ensure list length matches conducted classes
-    while len(st.session_state.attendance[subject]) < conducted:
-        st.session_state.attendance[subject].append(False)  # Add missing sessions
 
-    st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]  # Trim excess
+    # Adjust attendance list dynamically
+    while len(st.session_state.attendance[subject]) < conducted:
+        st.session_state.attendance[subject].append(False)  # Default False
+    st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]  # Trim if needed
 
     # Checkbox for each session
     for i in range(conducted):
-        key = f"{subject}_session_{i+1}"
-        if key not in st.session_state:
-            st.session_state[key] = st.session_state.attendance[subject][i]
-        
         st.session_state.attendance[subject][i] = st.checkbox(f"Session {i+1}", 
                                                               value=st.session_state.attendance[subject][i], 
-                                                              key=key)
+                                                              key=f"{subject}_session_{i+1}")
 
 # Display summary table
 summary_df = pd.DataFrame(summary)
