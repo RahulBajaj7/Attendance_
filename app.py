@@ -6,7 +6,7 @@ import os
 # Set page config
 st.set_page_config(layout="wide")
 
-# Subject details with dynamic tracking (20-session subjects are flexible)
+# Subject details
 subjects = {
     "LAB": 10,
     "RL": 10,
@@ -14,7 +14,7 @@ subjects = {
     "DLM": 20,
     "OSCM": 20,
     "C&S": 20,
-    "BIPBI": 20
+    "BIPBI": 20  # New subject added
 }
 
 # File path for saving attendance data
@@ -25,31 +25,25 @@ def load_attendance():
     if "attendance" not in st.session_state:
         if os.path.exists(ATTENDANCE_FILE):
             df = pd.read_csv(ATTENDANCE_FILE)
-
-            # Convert DataFrame to dictionary
             attendance_dict = df.to_dict(orient="list")
 
             # Ensure all subjects exist in attendance state
             for subject in subjects:
                 if subject not in attendance_dict:
-                    attendance_dict[subject] = []  # Start fresh if missing
+                    attendance_dict[subject] = []
+
             st.session_state.attendance = attendance_dict
         else:
-            # Initialize empty attendance data for all subjects
             st.session_state.attendance = {subject: [] for subject in subjects}
 
 # Save attendance data
 def save_attendance():
-    if not st.session_state.attendance:
-        st.warning("No attendance data to save.")
-        return
-
-    # Convert to DataFrame
-    df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in st.session_state.attendance.items()]))
-
-    # Save to CSV
+    max_length = max(len(lst) for lst in st.session_state.attendance.values())
+    for subject in subjects:
+        while len(st.session_state.attendance[subject]) < max_length:
+            st.session_state.attendance[subject].append(False)
+    df = pd.DataFrame.from_dict(st.session_state.attendance)
     df.to_csv(ATTENDANCE_FILE, index=False)
-    st.success("Attendance saved successfully!")
 
 # Load data on startup
 load_attendance()
@@ -99,21 +93,15 @@ for subject, max_classes in subjects.items():
 st.subheader("📌 Mark Attendance")
 for subject, max_classes in subjects.items():
     st.write(f"### {subject} (Max: {max_classes})")
-
-    # Sessions conducted dynamically tracked
-    conducted = len(st.session_state.attendance[subject])
-
-    # Ensure conducted is within allowed max
+    conducted = len(st.session_state.attendance.get(subject, []))
     conducted = st.number_input(f"Sessions Conducted for {subject}", 
                                 min_value=0, max_value=max_classes, 
                                 value=conducted, step=1, key=f"{subject}_conducted")
-
-    # Adjust attendance list dynamically
+    
+    st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]
     while len(st.session_state.attendance[subject]) < conducted:
-        st.session_state.attendance[subject].append(False)  # Default False
-    st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]  # Trim if needed
-
-    # Checkbox for each session
+        st.session_state.attendance[subject].append(False)
+    
     for i in range(conducted):
         st.session_state.attendance[subject][i] = st.checkbox(f"Session {i+1}", 
                                                               value=st.session_state.attendance[subject][i], 
@@ -127,3 +115,4 @@ st.dataframe(summary_df)
 # Save attendance data when button is clicked
 if st.button("💾 Save Attendance"):
     save_attendance()
+    st.success("Attendance data saved successfully!")
