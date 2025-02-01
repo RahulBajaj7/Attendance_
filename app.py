@@ -25,14 +25,13 @@ def load_attendance():
         if os.path.exists(ATTENDANCE_FILE):
             df = pd.read_csv(ATTENDANCE_FILE)
 
-            # Convert DataFrame to dictionary
+            # Convert DataFrame to dictionary with lists
             attendance_dict = df.to_dict(orient="list")
 
             # Ensure all subjects exist in attendance state
-            max_length = df.shape[0]  # Max number of sessions recorded
             for subject in subjects:
                 if subject not in attendance_dict:
-                    attendance_dict[subject] = [False] * max_length  # Match length with existing data
+                    attendance_dict[subject] = []  # Initialize missing subjects
 
             st.session_state.attendance = attendance_dict
         else:
@@ -41,24 +40,24 @@ def load_attendance():
 
 # Save attendance data
 def save_attendance():
-    # Find the max number of sessions conducted across all subjects
+    # Get max length across all subjects
     max_length = max(len(st.session_state.attendance[subject]) for subject in subjects)
 
     # Ensure all subjects have the same length by padding with False (not attended)
     for subject in subjects:
         while len(st.session_state.attendance[subject]) < max_length:
-            st.session_state.attendance[subject].append(False)  # Add missing sessions
+            st.session_state.attendance[subject].append(False)
         
-        # Trim if necessary (to avoid extra unwanted entries)
+        # Trim if necessary
         st.session_state.attendance[subject] = st.session_state.attendance[subject][:max_length]
 
-    # Convert dictionary to DataFrame
+    # Convert to DataFrame
     df = pd.DataFrame.from_dict(st.session_state.attendance)
 
-    # Save DataFrame to CSV
+    # Save to CSV
     df.to_csv(ATTENDANCE_FILE, index=False)
 
-# Load data on startup
+# Load attendance on startup
 load_attendance()
 
 # Title and Visualization
@@ -114,7 +113,7 @@ for subject, max_classes in subjects.items():
                                 min_value=0, max_value=max_classes, 
                                 value=conducted, step=1, key=f"{subject}_conducted")
     
-    # Ensure list length matches conducted classes
+    # Update list length dynamically
     if conducted > len(st.session_state.attendance[subject]):
         st.session_state.attendance[subject].extend([False] * (conducted - len(st.session_state.attendance[subject])))
     elif conducted < len(st.session_state.attendance[subject]):
