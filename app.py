@@ -28,30 +28,36 @@ def load_attendance():
             # Convert DataFrame to dictionary
             attendance_dict = df.to_dict(orient="list")
 
-            # Ensure all subjects exist in attendance state
-            max_length = df.shape[0]  # Max number of sessions recorded
+            # Ensure all subjects exist in attendance state with equal length
+            max_length = df.shape[0] if not df.empty else 0
             for subject in subjects:
                 if subject not in attendance_dict:
                     attendance_dict[subject] = [False] * max_length  # Match length with existing data
+
+            # Ensure all lists have the same length
+            for subject in subjects:
+                while len(attendance_dict[subject]) < max_length:
+                    attendance_dict[subject].append(False)  # Pad with 'False' (not attended)
 
             st.session_state.attendance = attendance_dict
         else:
             # Initialize empty attendance data for all subjects
             st.session_state.attendance = {subject: [] for subject in subjects}
 
-# Save attendance data (Fixed Version)
+# Save attendance data
 def save_attendance():
     if not st.session_state.attendance:
         st.warning("No attendance data to save.")
         return
 
-    # Get max length across all subjects
+    # Find max list length
     max_length = max((len(v) for v in st.session_state.attendance.values()), default=0)
 
     # Ensure all subjects have the same length
     for subject in st.session_state.attendance:
         while len(st.session_state.attendance[subject]) < max_length:
-            st.session_state.attendance[subject].append(False)  # Pad with 'False' (not attended)
+            st.session_state.attendance[subject].append(False)  # Pad missing sessions with False
+
         st.session_state.attendance[subject] = st.session_state.attendance[subject][:max_length]  # Trim if needed
 
     # Convert to DataFrame
@@ -59,7 +65,7 @@ def save_attendance():
 
     # Save to CSV
     df.to_csv(ATTENDANCE_FILE, index=False)
-    st.success("Attendance saved successfully!")
+    st.success("✅ Attendance saved successfully!")
 
 # Load data on startup
 load_attendance()
@@ -118,15 +124,20 @@ for subject, max_classes in subjects.items():
                                 value=conducted, step=1, key=f"{subject}_conducted")
     
     # Ensure list length matches conducted classes
-    st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]  # Trim excess sessions
     while len(st.session_state.attendance[subject]) < conducted:
         st.session_state.attendance[subject].append(False)  # Add missing sessions
-    
+
+    st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]  # Trim excess
+
     # Checkbox for each session
     for i in range(conducted):
+        key = f"{subject}_session_{i+1}"
+        if key not in st.session_state:
+            st.session_state[key] = st.session_state.attendance[subject][i]
+        
         st.session_state.attendance[subject][i] = st.checkbox(f"Session {i+1}", 
                                                               value=st.session_state.attendance[subject][i], 
-                                                              key=f"{subject}_session_{i+1}")
+                                                              key=key)
 
 # Display summary table
 summary_df = pd.DataFrame(summary)
