@@ -141,5 +141,3 @@ st.dataframe(summary_df)
 # Save attendance data when button is clicked
 if st.button("💾 Save Attendance"):
     save_attendance()
-
-
