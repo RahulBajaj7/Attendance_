@@ -1,12 +1,9 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-import dropbox
 import os
-
-# Dropbox authentication
-DROPBOX_ACCESS_TOKEN = "your_access_token_here"  # Replace with your access token
-dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+import dropbox
+from dropbox.exceptions import AuthError
 
 # Set page config
 st.set_page_config(layout="wide")
@@ -22,25 +19,24 @@ subjects = {
     "BIPBI": 20  # New subject added
 }
 
+# Dropbox details
+DROPBOX_ACCESS_TOKEN = "your_access_token"
+DROPBOX_FOLDER_PATH = "/attendance_data"
+DROPBOX_FILE_NAME = "attendance_data.csv"
+
+# Dropbox client setup
+dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
+
 # File path for saving attendance data
 ATTENDANCE_FILE = "attendance_data.csv"
-DROPBOX_FILE_PATH = "/attendance_data.csv"  # Path on Dropbox where the file will be saved
-
-# Function to upload file to Dropbox
-def upload_file_to_dropbox(file_path, dropbox_path):
-    try:
-        with open(file_path, "rb") as f:
-            # Upload the file to Dropbox, overwriting the existing file
-            dbx.files_upload(f.read(), dropbox_path, mode=dropbox.files.WriteMode("overwrite"))
-        print(f"File successfully updated at {dropbox_path}")
-    except dropbox.exceptions.ApiError as e:
-        print(f"Error uploading to Dropbox: {e}")
 
 # Load attendance data
 def load_attendance():
     if "attendance" not in st.session_state:
-        if os.path.exists(ATTENDANCE_FILE):
-            df = pd.read_csv(ATTENDANCE_FILE)
+        try:
+            # Try to download the file from Dropbox
+            _, res = dbx.files_download(DROPBOX_FOLDER_PATH + "/" + DROPBOX_FILE_NAME)
+            df = pd.read_csv(res.raw)
             attendance_dict = df.to_dict(orient="list")
 
             # Ensure all subjects exist in attendance state
@@ -49,20 +45,26 @@ def load_attendance():
                     attendance_dict[subject] = []
 
             st.session_state.attendance = attendance_dict
-        else:
+        except Exception as e:
+            # If no file, initialize empty attendance data
             st.session_state.attendance = {subject: [] for subject in subjects}
 
-# Save attendance data
+# Save attendance data to Dropbox
 def save_attendance():
     max_length = max(len(lst) for lst in st.session_state.attendance.values())
     for subject in subjects:
         while len(st.session_state.attendance[subject]) < max_length:
             st.session_state.attendance[subject].append(False)
-    df = pd.DataFrame.from_dict(st.session_state.attendance)
-    df.to_csv(ATTENDANCE_FILE, index=False)
 
-    # Upload the updated file to Dropbox
-    upload_file_to_dropbox(ATTENDANCE_FILE, DROPBOX_FILE_PATH)
+    df = pd.DataFrame.from_dict(st.session_state.attendance)
+
+    # Save the updated data to Dropbox
+    try:
+        # Upload to Dropbox, overwrite the existing file
+        dbx.files_upload(df.to_csv(index=False).encode(), DROPBOX_FOLDER_PATH + "/" + DROPBOX_FILE_NAME, mode=dropbox.files.WriteMode("overwrite"))
+        st.success("Attendance data saved successfully to Dropbox!")
+    except Exception as e:
+        st.error(f"Error uploading to Dropbox: {e}")
 
 # Load data on startup
 load_attendance()
@@ -112,12 +114,17 @@ for subject, max_classes in subjects.items():
 st.subheader("📌 Mark Attendance")
 for subject, max_classes in subjects.items():
     st.write(f"### {subject} (Max: {max_classes})")
-    conducted = len(st.session_state.attendance.get(subject, []))
-    conducted = st.number_input(f"Sessions Conducted for {subject}", 
-                                min_value=0, max_value=max_classes, 
-                                value=conducted, step=1, key=f"{subject}_conducted")
     
+    # Ensure that the input is within the allowed range
+    conducted = st.number_input(f"Sessions Conducted for {subject}",
+                                min_value=0, max_value=max_classes, 
+                                value=len(st.session_state.attendance.get(subject, [])),
+                                step=1, key=f"{subject}_conducted")
+    
+    # Truncate the list to the number of conducted sessions
     st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]
+    
+    # Add checkboxes for each session conducted
     while len(st.session_state.attendance[subject]) < conducted:
         st.session_state.attendance[subject].append(False)
     
@@ -134,6 +141,5 @@ st.dataframe(summary_df)
 # Save attendance data when button is clicked
 if st.button("💾 Save Attendance"):
     save_attendance()
-    st.success("Attendance data saved and updated to Dropbox!")
 
 
