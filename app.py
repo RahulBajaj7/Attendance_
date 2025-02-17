@@ -37,8 +37,16 @@ def save_attendance():
     # Convert session state dictionary to DataFrame
     df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in st.session_state.attendance.items()]))
     
+    # Ensure the "Subject" column is the same length as the rows in the DataFrame
+    subjects_list = list(subjects.keys())
+    num_rows = len(df)
+    
+    # If the number of rows is less than the number of subjects, extend it with NaNs
+    if num_rows < len(subjects_list):
+        subjects_list.extend([None] * (len(subjects_list) - num_rows))
+
     # Add the "Subject" column
-    df.insert(0, "Subject", list(subjects.keys()))
+    df.insert(0, "Subject", subjects_list[:num_rows])
     
     # Save DataFrame to CSV
     df.to_csv(ATTENDANCE_FILE, index=False)
