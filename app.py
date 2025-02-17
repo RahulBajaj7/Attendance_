@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import dropbox
-from dropbox.exceptions import AuthError
+from dropbox.exceptions import AuthError, ApiError
 
 # Set page config
 st.set_page_config(layout="wide")
@@ -19,7 +19,7 @@ subjects = {
 }
 
 # Dropbox details
-DROPBOX_ACCESS_TOKEN = "sl.u.AFgmUvu0WPLGmxCu-KKb0YmssYE8ABQgbsJRx5rJI4WyWepAVp-0AGTaH4_ERdqCFjlFAc65TRcks1X8YXOTN-gIDvNAB-dTimLGBauI3UMolKIxiyti5CCYuPi4SPH4h6aMJvetBUQNkvdTB39gp4WSEM3GTDVdUNN6q7fC98l4A-ytuhFGItw_hQU8a0oS496iSFUpKZxOKr9q_daFgqLbyHkp2-M7R_mfVu_AKjkhfwIHapY06TvXK_8Uqrs5QSp44dpS0cxLozPNUb5DyS5xoMK_VCrEuBf8y-ZPBfRtTYtmM-xmicseew1IArHqwGRdy0ssRpiNXvJV_UM5E5yvBzIQXfxIJ75eDYUGITMJgYcY7aHf9EZPBYWwDsIYB19JcUIVrVAq-H1mANld0xbvPl8Ez7aj8yKJEjMkSkMG9uQqiQmdXe8LtjDGUezzGbEbhF0ZwEhfvQSooKwGyUGzocsTUsp5Y9tVeC4khZvchRsok7wnN4xO8n7rA1Ocv_yWXXYbm3mDC3EoGjEOKL_RUFyAxwB03WOEB8fjmYNwVDuchm_Jgh5E21zKz4DAZif_phqkcWePmMvK8yCaTe965zmUvamgOnOGEXO79fyppMuGAoAIrM7gyaahSBalGfInc-bWy6cYpfu6iSYKcrHSMQmp4aCBP_RZWym9Bw1Q6qD6qa54RdaGoqdcy2Q4dCuSVHvjmIq251pEZKzem7-ZRLL_zydzVC_SiNPoRBreWumCGdMYBPXO6lqVymBdbFIiAMk2bRWnO0RMC3Lq3h2trS10jpsBZ4v19czPa0s1TypEpJ2wNmUZe9Hz_16-fhLHzxYWYdD3QPeJ4NfM_nn7-E7VtD00Fx4U4t0ZzsBB70Doevw_8u83-9M3pTLKBteHhoDxIZ4PfOKIlCeZ0uwQp1r6H_LOWicVvDelF_40b93RVab5_-K5c_OD2EU3w1a140rXaUKtYhvqwsJXBdKY9_Kfg5RzGZ7auGJ_kiF4DO1iXK_OfrEnWxH533f0l3e4Q6OINTDj5FisOriCFZGdDNXbtivvJbllt_JqDqsHEWRNLa1tsFtgq7wlgrY5XRpnrjGa6VI66L8i66Saba7C29I-t6Grp8S_briJgjn1CqS0FjKmxECYyh9npxUheo6eKnDalkYSRGSerjrqq9VS3inHAwf8jxdzWLfjp39ChMXKME-BYCDkzC3Y4EHqjXkHHgM_Vv2dU8it_rg17yewTUmTGuGvAUf-cyOHCEVXU9MyPD6AEoTi--Zd1W5QsBp6ax26bYfN-U_rxWPa-jmvD2le0CrECW_kRmg5806tAO_g8ArOcwVF5GmON1QoHYKunN9aOodRhHffeMXnBh4AedvFgOhjCU6g5bGvGH9oDKnMYOjABxItj8-0SrSh0rr8Rbh_nbXZe8vv2RApQqqasudUQjBSeg8s5hUyD5EpPg"
+DROPBOX_ACCESS_TOKEN = "sl.u.AFgCee1tA_4lFr-mDaqGECNr1Np5vHFo3WvZTLzKeWnjFxFCHbuIOKf_CBdVN1Mb0t14g-5p_QLnv2z6B_yl94xtuyS-CtFBweUnlqmX57tdCzMiJmediw2JFk6juhPgzef5QC8QaeUxCgFosgzMo3Yvk9S67iexxHbk7Wo5kXk59PmvYovIWgS57eo53odBP-zBLb_ZUwaLr7apW9hy3nTsmrd7rEKygR2ce7VJ562laAQ3xFg0zLd8zxpCLnBBe65OTbcCHKdnbpLhUd3lbyVwFUeAVNYaCYoV5txyXJwU2z9tChTIkx9Xrs8rwH7JW0FlutvAG-ZAY2dMg-_wG1H-CZAKTJOUnagyhX-gFeXUfe0hSbbrQCUf764plvvkrzO0QMIKKt14WS6j_DDJWbx1_scba3mNA_5a1j-yWIbEQnNuW5ArpU7lItQIe7SXAWUnVFwiC6c5lXgds25Fz7lnq3r9KThXmOEfYoD6m75SU42KoKK7X0Aj7Pt18jZkaZvikDB9L1aNXFGhsV8C35nXjHh1m_jv4zgjkqAWcHqz87mH2CD15NyjzCkTAaZPcK17A_8KjxcCpBGbuN5Dpz2QeeNnMtx14XVNhuel8TxH4Sh6g44trGozX_R32X_nw5ur9ym_jmsXjYjEh0bRBJihbPX9vkHyVp6nzJTg0T5V5gDLTHx866z_8fCW21lWBNkrc1kpfGxb-4IP1aH8xAKME2PE9EUgBn7DKoegCEcjHTtk7tZ5iXbA5oZJIyH_Xhe5QvNoiJfFF3g6L6RnYTOAmtgIYCFWft3g31RhAbAF1Ppnzk79E8VPgRhhRe1_oFofGC5aTkiGY6RtUPCEA83If70BncE7kbsSGbViE70VNyDncMD_JeG-DZZymQMrzcmFQ4ZlgaIKIufXo0Z7cKFVgpx_qxkA8Anuy7eusYO_ER52kTyWoTRxAD378B1fnxHMqtLerpimBa9BLqET3Nry2CVWuRidy850X-PBBmXNSPOUdzkCRuByst-vF713pkqtaSgMLbAvhBsFSrRGLLkVHsxvYyinu6teyWDcLULIdJ_2UZ_Ctf9dfd41SuyoXGLAlzQ-V7fVIoQnlTmXeUpK9LvAlbUuE7cx8Bzl7AJFsrUKXE5h1pIE1xch9iDrsB9rbEs4wf7-PnUYcNAw9AadJx31hkYTsfCCIP7yeI4BDjFwMeDJe_qgsegtWMBsbxjspUlkzcDMZELBDFUosZ_gH8_CrAj6tzA9w_HjeMFCQ2mx777xb5dPfYlR9CmyDWHwL1yk4__4omdNQNVHR-LVAHcLXGfNj9jWIX5bhUnh12Qtwnuj_LHN0T09krxsFmtVn7Ld3yg73th1xYuamPhfhQl8d7DHkmDatJ1SRC_Jh5gOSYamguhGLo6ZgaxF2NP_E5Wo-DkbDnlok7DrcDzeUbHEtKhupIE8PgmueVa0iw"
 DROPBOX_FOLDER_PATH = "/attendance_data"
 DROPBOX_FILE_NAME = "attendance_data.csv"
 
@@ -47,6 +47,7 @@ def load_attendance():
         except Exception as e:
             # If no file, initialize empty attendance data
             st.session_state.attendance = {subject: [] for subject in subjects}
+            st.error(f"Error loading attendance: {e}")
 
 # Save attendance data to Dropbox
 def save_attendance():
@@ -60,12 +61,18 @@ def save_attendance():
     # Save the updated data to Dropbox
     try:
         # Upload to Dropbox, overwrite the existing file
-        dbx.files_upload(df.to_csv(index=False).encode(), DROPBOX_FOLDER_PATH + "/" + DROPBOX_FILE_NAME, mode=dropbox.files.WriteMode("overwrite"))
+        response = dbx.files_upload(df.to_csv(index=False).encode(), DROPBOX_FOLDER_PATH + "/" + DROPBOX_FILE_NAME, mode=dropbox.files.WriteMode("overwrite"))
         st.success("Attendance data saved successfully to Dropbox!")
-        # Reload the attendance data after saving to ensure it's updated
-        load_attendance()
+        st.write(response)  # Optional: Log the response for debugging
+    except ApiError as api_error:
+        if api_error.is_path() and api_error.get_path().is_conflict():
+            st.error(f"Conflict error: {api_error}")
+        else:
+            st.error(f"API Error: {api_error}")
+    except AuthError as auth_error:
+        st.error(f"Authentication Error: {auth_error}")
     except Exception as e:
-        st.error(f"Error uploading to Dropbox: {e}")
+        st.error(f"Unexpected error: {e}")
 
 # Load data on startup
 load_attendance()
