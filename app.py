@@ -31,11 +31,14 @@ def load_attendance():
 
 # Save attendance data
 def save_attendance():
-    df = pd.DataFrame.from_dict(st.session_state.attendance, orient="index").T
-    df.insert(0, "Subject", list(subjects.keys()))
+    # Convert session state dictionary to DataFrame
+    df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in st.session_state.attendance.items()]))
+    
+    # Save DataFrame to CSV
     df.to_csv(ATTENDANCE_FILE, index=False)
+    
     st.success("Attendance data saved successfully!")
-    st.experimental_rerun()  # Refresh to reflect changes
+    st.experimental_rerun()  # Refresh UI after saving
 
 # Load data on startup
 load_attendance()
