@@ -25,25 +25,17 @@ def load_attendance():
     if "attendance" not in st.session_state:
         if os.path.exists(ATTENDANCE_FILE):
             df = pd.read_csv(ATTENDANCE_FILE)
-            attendance_dict = df.to_dict(orient="list")
-
-            # Ensure all subjects exist in attendance state
-            for subject in subjects:
-                if subject not in attendance_dict:
-                    attendance_dict[subject] = []
-
-            st.session_state.attendance = attendance_dict
+            st.session_state.attendance = df.set_index("Subject").T.to_dict("list")
         else:
             st.session_state.attendance = {subject: [] for subject in subjects}
 
 # Save attendance data
 def save_attendance():
-    max_length = max(len(lst) for lst in st.session_state.attendance.values())
-    for subject in subjects:
-        while len(st.session_state.attendance[subject]) < max_length:
-            st.session_state.attendance[subject].append(False)
-    df = pd.DataFrame.from_dict(st.session_state.attendance)
+    df = pd.DataFrame.from_dict(st.session_state.attendance, orient="index").T
+    df.insert(0, "Subject", list(subjects.keys()))
     df.to_csv(ATTENDANCE_FILE, index=False)
+    st.success("Attendance data saved successfully!")
+    st.experimental_rerun()  # Refresh to reflect changes
 
 # Load data on startup
 load_attendance()
@@ -98,14 +90,17 @@ for subject, max_classes in subjects.items():
                                 min_value=0, max_value=max_classes, 
                                 value=conducted, step=1, key=f"{subject}_conducted")
     
-    st.session_state.attendance[subject] = st.session_state.attendance[subject][:conducted]
-    while len(st.session_state.attendance[subject]) < conducted:
-        st.session_state.attendance[subject].append(False)
-    
+    # Adjust session attendance list
+    current_list = st.session_state.attendance.get(subject, [])
+    while len(current_list) < conducted:
+        current_list.append(False)
+    st.session_state.attendance[subject] = current_list[:conducted]
+
     for i in range(conducted):
+        key = f"{subject}_session_{i+1}"
         st.session_state.attendance[subject][i] = st.checkbox(f"Session {i+1}", 
                                                               value=st.session_state.attendance[subject][i], 
-                                                              key=f"{subject}_session_{i+1}")
+                                                              key=key)
 
 # Display summary table
 summary_df = pd.DataFrame(summary)
@@ -115,4 +110,3 @@ st.dataframe(summary_df)
 # Save attendance data when button is clicked
 if st.button("💾 Save Attendance"):
     save_attendance()
-    st.success("Attendance data saved successfully!")
