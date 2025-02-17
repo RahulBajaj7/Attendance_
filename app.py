@@ -4,10 +4,8 @@ import plotly.graph_objects as go
 import dropbox
 import os
 
-# Dropbox Access Token
-DROPBOX_ACCESS_TOKEN = "sl.u.AFix1p8Ha04bX3rOGa8cnWRLoKYGKBTuH0jJvM1QbRYGt4AHoGeeefqsth_jOym6iekQNUpdKA1h7ShTNq7_SAmA6WbLU4udgJummA4TMA6NEuQxg688Z9fvQOOHj2kEfn9rIcRwNe_CcDi_oUhGzv7AvGAkeckh7VzOeVxD2k1CTLd38xNgtDJmMxzlldlxcDzthdi5wJ8BqiJ5GREDn8r_deqtGuizFrMM2RN80SmriJW_rg7lF_0PKoEzgzbH4UqePX7jpw2MUssF25ANbvttAM-2n2q0YrT2QoNjN77BIjRGFgBNGrCcaiG3kwY2WT5Kn1KpmDZfj4hp4bDQWKQik_9T_WkZZ6l-qnl-Y5Xla1BTr1ONgVNVhY84MdfdQ1rDhG7cmgXHFyCuy7hI_zi5wQSZLWB5wKmSnQmlGSjifTMtJJT9ii9Bq0hDGhCyTl7VYiaQA1_hkOj79FWAYg-ijydiMBLf7AkKishW3UUcUv4i6l96A0-wXgz5i3AR9vJH2Pz_Abi63s96BNei9Cei9B3w5Y7G4UT-rrkFUh6uTJAzJMpZL90kvo93jIwHvUWCyUGE8t7wNfOAVIqU5-I9J3gGtbVO23XeY8FhQxQ5-6yCu2MFTjdze1G7B9_noD2yv4rdIdZtSz0qxBhIDwT-sgfRzmMzXPb6mkxnECjvihlUzgtwcuUpG567sdEHTBzyuzZR2r59QU7DDNpNf4p5Iku4zpjYZdu4zAvlsEucSYRFmaqEjBoSLDfN6SuSqoJECcrFhnZdEvNHdBRzolo4CiT4PGBuQbCb8-HgEyTMnC7dTRpjeraucHrf_IKrJVs947qnzLFl0JIKeEbh9X7wJjJg5VJ5paBeXSYRc01bPBTgUpcAgFXV68nPJMjeAzFyc6Devque0NPVtyzWxMTFGzaxs08GJ9l5D9CsoTvBGjaXB9iXEHpczhDlWtJlhwl5rGZ3fA5XBSU9lwCfVvhcu3IsVOYuguugBmnIfGCyTpUqM-RoQAs2ZEJbD1uhNZ2eOBG_bi_G3PgwH6XWcvyYroEE0l_4t1NKlo-SM4W7XM99J6brikeMP33Pi0ZlDShLMChx1pzgWpSkSTYerRFkFO3fd2OppacxjlHxxrpoBaPAL9RPL2Qbq_kDbSQ1hiQFxqSBf2_DBaEHoyNvDpRQMFUvF_IUAwCDH2UMkEg_TxPqon1rNkkG49Xt2Rnz2Gu_yCeFQkjYEiKUJGkPDVQ4Py5cFRgHJgQIPu90mQJBxfae8D3D5OHsFZV0YWTB8og5AEyOBjFqpHIYftjqc4UtJJpPgfJrdm_FDt_0xk76a5_WIJd_Jam6E1uDoyzckutyA-rep2MqOj0Xg6RM1JppDm5WvTcpaVueZx7ZZOiM6MDxehayODyXE6kGVipu-LOgMJDp5pODEGkwUOrht81KLEEbeVbIWAoGhQVoC1vdaA"
-
-# Set up Dropbox client
+# Dropbox authentication
+DROPBOX_ACCESS_TOKEN = "your_access_token_here"  # Replace with your access token
 dbx = dropbox.Dropbox(DROPBOX_ACCESS_TOKEN)
 
 # Set page config
@@ -26,6 +24,17 @@ subjects = {
 
 # File path for saving attendance data
 ATTENDANCE_FILE = "attendance_data.csv"
+DROPBOX_FILE_PATH = "/attendance_data.csv"  # Path on Dropbox where the file will be saved
+
+# Function to upload file to Dropbox
+def upload_file_to_dropbox(file_path, dropbox_path):
+    try:
+        with open(file_path, "rb") as f:
+            # Upload the file to Dropbox, overwriting the existing file
+            dbx.files_upload(f.read(), dropbox_path, mode=dropbox.files.WriteMode("overwrite"))
+        print(f"File successfully updated at {dropbox_path}")
+    except dropbox.exceptions.ApiError as e:
+        print(f"Error uploading to Dropbox: {e}")
 
 # Load attendance data
 def load_attendance():
@@ -43,24 +52,17 @@ def load_attendance():
         else:
             st.session_state.attendance = {subject: [] for subject in subjects}
 
-# Save attendance data to Dropbox
-def save_attendance_to_dropbox():
+# Save attendance data
+def save_attendance():
     max_length = max(len(lst) for lst in st.session_state.attendance.values())
     for subject in subjects:
         while len(st.session_state.attendance[subject]) < max_length:
             st.session_state.attendance[subject].append(False)
     df = pd.DataFrame.from_dict(st.session_state.attendance)
-
-    # Save locally first
     df.to_csv(ATTENDANCE_FILE, index=False)
 
-    # Upload to Dropbox
-    try:
-        with open(ATTENDANCE_FILE, "rb") as f:
-            dbx.files_upload(f.read(), f'/attendance/{ATTENDANCE_FILE}', mute=True)
-        st.success("Attendance data uploaded to Dropbox successfully!")
-    except Exception as e:
-        st.error(f"Error uploading to Dropbox: {e}")
+    # Upload the updated file to Dropbox
+    upload_file_to_dropbox(ATTENDANCE_FILE, DROPBOX_FILE_PATH)
 
 # Load data on startup
 load_attendance()
@@ -130,6 +132,8 @@ st.subheader("📄 Attendance Summary")
 st.dataframe(summary_df)
 
 # Save attendance data when button is clicked
-if st.button("💾 Save Attendance to Dropbox"):
-    save_attendance_to_dropbox()
+if st.button("💾 Save Attendance"):
+    save_attendance()
+    st.success("Attendance data saved and updated to Dropbox!")
+
 
