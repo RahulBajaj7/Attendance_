@@ -25,7 +25,10 @@ def load_attendance():
     if "attendance" not in st.session_state:
         if os.path.exists(ATTENDANCE_FILE):
             df = pd.read_csv(ATTENDANCE_FILE)
-            st.session_state.attendance = df.set_index("Subject").T.to_dict("list")
+            if "Subject" in df.columns:
+                st.session_state.attendance = df.set_index("Subject").T.to_dict("list")
+            else:
+                st.session_state.attendance = {subject: [] for subject in subjects}
         else:
             st.session_state.attendance = {subject: [] for subject in subjects}
 
@@ -33,6 +36,9 @@ def load_attendance():
 def save_attendance():
     # Convert session state dictionary to DataFrame
     df = pd.DataFrame(dict([(k, pd.Series(v)) for k, v in st.session_state.attendance.items()]))
+    
+    # Add the "Subject" column
+    df.insert(0, "Subject", list(subjects.keys()))
     
     # Save DataFrame to CSV
     df.to_csv(ATTENDANCE_FILE, index=False)
@@ -113,3 +119,4 @@ st.dataframe(summary_df)
 # Save attendance data when button is clicked
 if st.button("💾 Save Attendance"):
     save_attendance()
+
