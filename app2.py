@@ -32,16 +32,16 @@ total_points = df["Points"].sum()
 goal = 40
 remaining_points = max(goal - total_points, 0)
 
-# Donut Chart with Adjusted Layout
+# Donut Chart with Minimalist Style
 fig = px.pie(
-    names=["Earned Points", "Remaining Points"],
+    names=["Earned", "Remaining"],
     values=[total_points, remaining_points],
-    hole=0.5,
-    color_discrete_sequence=["#1ABC9C", "#E74C3C"],  # Green & Red
+    hole=0.6,
+    color_discrete_sequence=["#2ECC71", "#E74C3C"],
 )
 
 fig.update_layout(
-    title_text="📊 Seminar Points Progress",
+    title_text="Progress to Goal",
     title_x=0.5,
     margin=dict(l=20, r=20, t=40, b=10),
     legend=dict(
@@ -51,48 +51,39 @@ fig.update_layout(
         xanchor="center",
         x=0.5
     ),
-    height=350
+    height=320
 )
 
-# Set Page Title
-st.markdown("""
-    <h1 style='text-align: center; color: #16A085;'>📊 Rahul & Tanu's Seminar Points 🎓👩‍❤️‍💋‍👨</h1>
-""", unsafe_allow_html=True)
+# Page Title
+st.title("📊 Seminar Points Tracker")
 
-# Display Summary at Top
+# Summary Section
 st.markdown(
     f"""
-    <div style="display: flex; justify-content: space-around; padding: 10px;">
-        <div style="border: 3px solid #16A085; padding: 15px; border-radius: 10px; background-color: #1ABC9C; color: white; font-size: 18px; text-align: center;">
-            ✅ <b>Total Points Earned:</b> <br> <span style='color: #F7DC6F; font-size: 24px;'><b>{total_points}</b></span>
-        </div>
-        <div style="border: 3px solid #E74C3C; padding: 15px; border-radius: 10px; background-color: #C0392B; color: white; font-size: 18px; text-align: center;">
-            ❗ <b>Points Needed to Reach Goal:</b> <br> <span style='color: #F7DC6F; font-size: 24px;'><b>{remaining_points}</b></span>
-        </div>
+    <div style="text-align: center; padding: 10px;">
+        <h2 style="color: #2C3E50;">Total Points: <span style='color: #2ECC71;'>{total_points}</span></h2>
+        <h3 style="color: #2C3E50;">Remaining: <span style='color: #E74C3C;'>{remaining_points}</span></h3>
     </div>
     """,
     unsafe_allow_html=True
 )
 
-# Create Two Columns (Chart on Left, Table on Right)
-col1, col2 = st.columns([1.5, 2])
+# Layout
+col1, col2 = st.columns([1.2, 2])
 
 # Left Column → Donut Chart
 with col1:
-    st.markdown("### 📈 Progress Toward 40 Points Goal")
     st.plotly_chart(fig, use_container_width=True)
 
 # Right Column → Seminar Table
 with col2:
     st.markdown("### 📅 Seminars Attended")
-    st.markdown('<div style="display: flex; justify-content: center;">', unsafe_allow_html=True)
     st.write(df.style.set_properties(**{
-        'background-color': '#1F2833',
-        'color': 'white',
-        'border-color': 'white',
+        'background-color': '#F4F6F6',
+        'color': '#2C3E50',
+        'border-color': '#D5D8DC',
         'text-align': 'center'
     }).set_table_styles([
-        {'selector': 'th', 'props': [('background-color', '#16A085'), ('color', 'white'), ('text-align', 'center')]},
+        {'selector': 'th', 'props': [('background-color', '#2ECC71'), ('color', 'white'), ('text-align', 'center')]},
         {'selector': 'td', 'props': [('text-align', 'center')]}
     ]))
-
