@@ -18,6 +18,7 @@ data = [
     {"Date": "31st January, 2025", "Topic": "Oraculum 2025: Panel Discussion, Envison 1.0", "Points": 3},
     {"Date": "31st January, 2025", "Topic": "Oraculum 2025: Real Talk Trailblazers, Envison 1.0", "Points": 3},
     {"Date": "01st February, 2025", "Topic": "Mastering Management 6", "Points": 2},
+    {"Date": "22nd February, 2025", "Topic": "Leadership Luminaries: B2B Sales", "Points": 2},
 ]
 
 df = pd.DataFrame(data)
